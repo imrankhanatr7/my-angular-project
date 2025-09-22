@@ -81,7 +81,7 @@
 
     <!-- Content Area -->
     <div class="drawer-content">
-      <!-- Search Bar - Exact style from image -->
+      <!-- Search Bar -->
       <div class="search-section">
         <div class="search-bar">
           <input 
@@ -170,42 +170,80 @@
                   @if (item.title === 'Transform') {
                     <div class="transform-section">
                       <h4>Transform</h4>
-                      <div class="transform-controls">
-                        <button class="transform-btn" [class.active]="selectedTransform === 'move'" (click)="selectTransform('move')">
-                          <i class="fas fa-arrows-alt"></i>
+                      
+                      <!-- Transform Controls -->
+                      <div class="transform-controls-wrapper">
+                        <button class="transform-control-btn" [class.active]="selectedTransform === 'cursor'" (click)="selectTransform('cursor')">
+                          <i class="fas fa-mouse-pointer"></i>
                         </button>
-                        <button class="transform-btn" [class.active]="selectedTransform === 'scale'" (click)="selectTransform('scale')">
+                        <button class="transform-control-btn" [class.active]="selectedTransform === 'plus'" (click)="selectTransform('plus')">
+                          <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="transform-control-btn" [class.active]="selectedTransform === 'rotate'" (click)="selectTransform('rotate')">
+                          <i class="fas fa-redo-alt"></i>
+                        </button>
+                        <button class="transform-control-btn" [class.active]="selectedTransform === 'skew'" (click)="selectTransform('skew')">
+                          <i class="fas fa-vector-square"></i>
+                        </button>
+                        <button class="transform-control-btn" [class.active]="selectedTransform === 'expand'" (click)="selectTransform('expand')">
                           <i class="fas fa-expand-arrows-alt"></i>
-                        </button>
-                        <button class="transform-btn" [class.active]="selectedTransform === 'rotate'" (click)="selectTransform('rotate')">
-                          <i class="fas fa-redo"></i>
-                        </button>
-                        <button class="transform-btn" [class.active]="selectedTransform === 'skew'" (click)="selectTransform('skew')">
-                          <i class="fas fa-italic"></i>
-                        </button>
-                        <button class="transform-btn" [class.active]="selectedTransform === 'expand'" (click)="selectTransform('expand')">
-                          <i class="fas fa-expand"></i>
                         </button>
                       </div>
                       
-                      <div class="transform-workspace">
-                        <div class="position-grid">
-                          @for (dot of gridDots; track $index) {
-                            <button class="grid-dot" 
-                                   [class.active]="dot.active" 
-                                   (click)="selectGridDot($index)">
-                            </button>
-                          }
-                          <div class="position-label">{{ gridPosition }}</div>
+                      <!-- EXACT Grid Layout as shown in image -->
+                      <div class="transform-workspace-container">
+                        <div class="grid-and-sliders">
+                          <!-- Main Grid Container -->
+                          <div class="main-grid-container">
+                            <!-- 2x2 Main Grid with grey borders -->
+                            <div class="main-grid-lines">
+                              <!-- Horizontal center line -->
+                              <div class="main-line horizontal"></div>
+                              <!-- Vertical center line -->
+                              <div class="main-line vertical"></div>
+                            </div>
+                            
+                            <!-- 2x2 Nested Grid - CENTERED and one-fourth size -->
+                            <div class="nested-grid-container">
+                              <!-- Light grey border connecting outer dots -->
+                              <div class="nested-border-box"></div>
+                              <!-- Nested grid lines -->
+                              <div class="nested-line horizontal"></div>
+                              <div class="nested-line vertical"></div>
+                            </div>
+                            
+                            <!-- 9 Blue Dots - ONLY on nested grid (3x3 pattern) -->
+                            <!-- Top row -->
+                            <div class="blue-dot" style="top: 37.5%; left: 37.5%" (click)="selectDot(1)"></div>
+                            <div class="blue-dot" style="top: 37.5%; left: 50%" (click)="selectDot(2)"></div>
+                            <div class="blue-dot" style="top: 37.5%; left: 62.5%" (click)="selectDot(3)"></div>
+                            
+                            <!-- Middle row -->
+                            <div class="blue-dot" style="top: 50%; left: 37.5%" (click)="selectDot(4)"></div>
+                            <div class="blue-dot active" style="top: 50%; left: 50%" (click)="selectDot(5)"></div> <!-- CENTER DOT -->
+                            <div class="blue-dot" style="top: 50%; left: 62.5%" (click)="selectDot(6)"></div>
+                            
+                            <!-- Bottom row -->
+                            <div class="blue-dot" style="top: 62.5%; left: 37.5%" (click)="selectDot(7)"></div>
+                            <div class="blue-dot" style="top: 62.5%; left: 50%" (click)="selectDot(8)"></div>
+                            <div class="blue-dot" style="top: 62.5%; left: 62.5%" (click)="selectDot(9)"></div>
+                          </div>
+                          
+                          <!-- Vertical Slider WITH CENTRE BUTTON -->
+                          <div class="vertical-slider-container">
+                            <div class="vertical-slider-track" (click)="moveVerticalSlider($event)">
+                              <div class="vertical-slider-handle" [style.top.%]="verticalSliderPosition"></div>
+                            </div>
+                            <button class="centre-button" (click)="centerVerticalSlider()">Centre</button>
+                          </div>
                         </div>
                         
-                        <div class="transform-slider">
-                          <div class="slider-container">
-                            <div class="slider-track" (click)="moveSlider($event)">
-                              <div class="slider-handle" [style.top.%]="sliderPosition"></div>
-                            </div>
+                        <!-- Horizontal Slider WITH CENTRE BUTTON -->
+                        <div class="horizontal-slider-container">
+                          <div class="horizontal-slider-track" (click)="moveHorizontalSlider($event)">
+                            <div class="horizontal-slider-handle" [style.left.%]="horizontalSliderPosition"></div>
                           </div>
-                          <div class="slider-value">{{ verticalPosition }}</div>
+                          <button class="horizontal-centre-button" (click)="centerHorizontalSlider()">Centre</button>
                         </div>
                       </div>
                     </div>

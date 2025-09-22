@@ -30,18 +30,12 @@ export class AppComponent implements OnInit {
   };
 
   // Transform functionality
-  selectedTransform = 'expand';
-  gridPosition = 'center';
-  verticalPosition = 'center';
-  sliderPosition = 50;
+  selectedTransform = 'expand'; // Default active is expand
+  verticalSliderPosition = 50;
+  horizontalSliderPosition = 50;
+  selectedDot = 5; // Center dot selected by default
 
-  gridDots = [
-    { active: false }, { active: false }, { active: false },
-    { active: false }, { active: true },  { active: false },
-    { active: false }, { active: false }, { active: false }
-  ];
-
-  // Simple items without extra metadata
+  // Content items
   contentItems: AccordionItem[] = [
     { id: 1, title: 'Text Content', description: 'Manage all text content including headings, paragraphs, and inline text formatting options.', expanded: false },
     { id: 2, title: 'Rich Text Editor', description: 'Advanced WYSIWYG editor with formatting tools and collaborative editing features.', expanded: false },
@@ -55,6 +49,7 @@ export class AppComponent implements OnInit {
     { id: 10, title: 'Content Templates', description: 'Design reusable content templates for consistent formatting.', expanded: false }
   ];
 
+  // Design items
   designItems: AccordionItem[] = [
     { id: 1, title: 'Sizing', description: 'Control width, height, and responsive sizing with breakpoint-specific values.', expanded: false },
     { id: 2, title: 'Spacing', description: 'Manage margins, padding, and gaps with consistent spacing scales.', expanded: false },
@@ -68,12 +63,13 @@ export class AppComponent implements OnInit {
     { id: 10, title: 'Layout Grid', description: 'Powerful CSS Grid and Flexbox layout tools with visual editor.', expanded: false }
   ];
 
+  // Advanced items
   advancedItems: AccordionItem[] = [
     { id: 1, title: 'Custom CSS', description: 'Write custom CSS with syntax highlighting and real-time preview.', expanded: false },
     { id: 2, title: 'Animation', description: 'Create complex animations with keyframe editor and timing controls.', expanded: false },
     { id: 3, title: 'Responsive Design', description: 'Advanced responsive design tools with custom breakpoints.', expanded: false },
     { id: 4, title: 'JavaScript', description: 'Embed custom JavaScript for interactive behaviors.', expanded: false },
-    { id: 5, title: 'Performance', description: 'Monitor and optimize loading performance with advanced metrics.', expanded: false },
+    { id: 5, title: 'Performance', description: 'Monitor and optimize performance with advanced metrics.', expanded: false },
     { id: 6, title: 'SEO Settings', description: 'Complete SEO setup with meta tags and structured data.', expanded: false },
     { id: 7, title: 'Accessibility', description: 'Ensure WCAG compliance with accessibility auditing tools.', expanded: false },
     { id: 8, title: 'API Integration', description: 'Connect to external APIs with authentication and error handling.', expanded: false },
@@ -244,32 +240,38 @@ export class AppComponent implements OnInit {
     this.selectedTransform = type;
   }
 
-  selectGridDot(index: number) {
-    this.gridDots.forEach(dot => dot.active = false);
-    this.gridDots[index].active = true;
-    
-    const positions = [
-      'top-left', 'top-center', 'top-right',
-      'center-left', 'center', 'center-right',
-      'bottom-left', 'bottom-center', 'bottom-right'
-    ];
-    this.gridPosition = positions[index];
+  selectDot(dotId: number) {
+    this.selectedDot = dotId;
+    console.log('Dot selected:', dotId);
   }
 
-  moveSlider(event: MouseEvent) {
+  moveVerticalSlider(event: MouseEvent) {
     const slider = event.currentTarget as HTMLElement;
     const rect = slider.getBoundingClientRect();
     const y = event.clientY - rect.top;
     const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
     
-    this.sliderPosition = percentage;
-    
-    if (percentage < 33) {
-      this.verticalPosition = 'top';
-    } else if (percentage > 66) {
-      this.verticalPosition = 'bottom';
-    } else {
-      this.verticalPosition = 'center';
-    }
+    this.verticalSliderPosition = percentage;
   }
+
+  moveHorizontalSlider(event: MouseEvent) {
+    const slider = event.currentTarget as HTMLElement;
+    const rect = slider.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+    
+    this.horizontalSliderPosition = percentage;
+  }
+
+  // Add these methods to your app.ts file
+centerVerticalSlider() {
+  this.verticalSliderPosition = 50;
+  console.log('Vertical slider centered');
+}
+
+centerHorizontalSlider() {
+  this.horizontalSliderPosition = 50;
+  console.log('Horizontal slider centered');
+}
+
 }
