@@ -1,384 +1,253 @@
-<div class="main-container" [class.light-theme]="isDarkMode() === false">
-  <!-- Main Page Button -->
+<div class="main-container">
+  <!-- Main Page -->
   <div class="main-page">
-    <!-- Theme Toggle Slider -->
-    <div class="theme-toggle-wrapper">
-      <div class="theme-toggle" (click)="toggleTheme()">
-        <div class="theme-icon sun-icon" [class.active]="!isDarkMode()">
-          <i class="fas fa-sun"></i>
-        </div>
-        <div class="theme-slider" [class.dark]="isDarkMode()">
-          <div class="slider-circle"></div>
-        </div>
-        <div class="theme-icon moon-icon" [class.active]="isDarkMode()">
-          <i class="fas fa-moon"></i>
-        </div>
-      </div>
-      <span class="theme-label">{{ isDarkMode() ? 'Dark' : 'Light' }} Mode</span>
-    </div>
-
-    <!-- Main Settings Button -->
-    <div class="main-button-container">
-      <button class="menu-toggle-btn" (click)="toggleDrawer()">
-        <div class="button-icon">
-          <i class="fas fa-cogs"></i>
-        </div>
-        <div class="button-content">
-          <span class="button-title">Advanced Settings</span>
-          <span class="button-subtitle">Customize your experience</span>
-        </div>
-        <div class="button-arrow">
-          <i class="fas fa-arrow-right"></i>
-        </div>
-      </button>
+    <div class="start-message" (click)="toggleDrawer()">
+      <h1>Click to Open Settings</h1>
+      <p>Configure your advanced options</p>
     </div>
   </div>
 
-  <!-- Drawer/Menu -->
+  <!-- Drawer Overlay -->
   <div class="drawer-overlay" [class.active]="isDrawerOpen()" (click)="closeDrawer()"></div>
   
-  <div class="drawer" [class.open]="isDrawerOpen()">
+  <!-- Settings Drawer -->
+  <div class="settings-drawer" [class.open]="isDrawerOpen()">
+    <!-- Header -->
     <div class="drawer-header">
-      <div class="header-content">
-        <div class="header-icon">
-          <i class="fas fa-sliders-h"></i>
-        </div>
-        <div class="header-text">
-          <h2>Settings Panel</h2>
-          <p>Configure your preferences</p>
+      <div class="header-left">
+        <h1>Row Settings</h1>
+        <div class="preset-section">
+          <span class="preset-label">Preset:</span>
+          <div class="preset-dropdown" (click)="togglePresetDropdown()">
+            <span>Default</span>
+            <i class="fas fa-chevron-down" [class.rotated]="showPresetDropdown"></i>
+          </div>
         </div>
       </div>
-      <button class="close-btn" (click)="closeDrawer()">
-        <i class="fas fa-times"></i>
+      <div class="header-actions">
+        <button class="header-btn" (click)="openSettings()" title="Settings">
+          <i class="fas fa-cog"></i>
+        </button>
+        <button class="header-btn" (click)="toggleView()" title="Grid View">
+          <i class="fas fa-th-large"></i>
+        </button>
+        <button class="header-btn more-btn" (click)="toggleMoreMenu()" title="More Options">
+          <i class="fas fa-ellipsis-v"></i>
+          @if (showMoreMenu) {
+            <div class="more-menu" (click)="$event.stopPropagation()">
+              <div class="menu-item" (click)="exportSettings()">
+                <i class="fas fa-download"></i>
+                Export Settings
+              </div>
+              <div class="menu-item" (click)="importSettings()">
+                <i class="fas fa-upload"></i>
+                Import Settings
+              </div>
+              <div class="menu-item" (click)="resetSettings()">
+                <i class="fas fa-undo"></i>
+                Reset All
+              </div>
+              <div class="menu-item danger" (click)="closeDrawer()">
+                <i class="fas fa-times"></i>
+                Close Panel
+              </div>
+            </div>
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button 
+        class="tab-btn"
+        [class.active]="activeTab() === 'content'"
+        (click)="setActiveTab('content')">
+        Content
+      </button>
+      <button 
+        class="tab-btn"
+        [class.active]="activeTab() === 'design'"
+        (click)="setActiveTab('design')">
+        Design
+      </button>
+      <button 
+        class="tab-btn"
+        [class.active]="activeTab() === 'advanced'"
+        (click)="setActiveTab('advanced')">
+        Advanced
       </button>
     </div>
 
+    <!-- Content Area -->
     <div class="drawer-content">
-      <!-- Tab Navigation -->
-      <div class="tab-navigation">
-        <button 
-          class="tab-btn"
-          [class.active]="activeTab() === 'content'"
-          (click)="setActiveTab('content')">
-          <i class="fas fa-file-alt"></i>
-          <span>Content</span>
-        </button>
-        <button 
-          class="tab-btn"
-          [class.active]="activeTab() === 'design'"
-          (click)="setActiveTab('design')">
-          <i class="fas fa-palette"></i>
-          <span>Design</span>
-        </button>
-        <button 
-          class="tab-btn"
-          [class.active]="activeTab() === 'advanced'"
-          (click)="setActiveTab('advanced')">
-          <i class="fas fa-code"></i>
-          <span>Advanced</span>
-        </button>
+      <!-- Search Bar - Exact style from image -->
+      <div class="search-section">
+        <div class="search-bar">
+          <input 
+            type="text" 
+            class="search-input"
+            placeholder="Search Options"
+            [(ngModel)]="searchTerm"
+            (input)="onSearch()">
+          <button class="filter-btn" 
+                  [class.active]="showFilterDropdown"
+                  (click)="toggleFilterDropdown($event)">
+            <i class="fas fa-plus"></i>
+            <span>Filter</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Content Tab -->
-      @if (activeTab() === 'content') {
-        <div class="tab-content">
-          <div class="search-filter-section">
-            <div class="search-bar">
-              <input 
-                type="text" 
-                placeholder="Search content options..."
-                [(ngModel)]="contentSearchTerm"
-                (input)="filterAccordions('content')">
-              <i class="fas fa-search"></i>
+      <!-- Filter Dropdown -->
+      @if (showFilterDropdown) {
+        <div class="filter-dropdown" (click)="$event.stopPropagation()">
+          <div class="filter-section">
+            <div class="section-header">
+              <i class="fas fa-sort-amount-down"></i>
+              <h3>Sort Options</h3>
             </div>
-            <div class="filter-dropdown-wrapper">
-              <button class="filter-btn" (click)="toggleFilterDropdown('content')">
-                <i class="fas fa-filter"></i>
-                <span>Filter</span>
-                <i class="fas fa-chevron-down dropdown-arrow" [class.rotated]="filterDropdowns.content"></i>
-              </button>
-              <div class="filter-dropdown" [class.active]="filterDropdowns.content">
-                <div class="filter-section">
-                  <h4><i class="fas fa-sort-alpha-down"></i> Sort By</h4>
-                  <div class="filter-options">
-                    <label class="filter-option">
-                      <input type="radio" name="contentSort" value="default" [(ngModel)]="filters.content.sortBy" (change)="applyFilters('content')">
-                      <span class="checkmark"></span>
-                      Default Order
-                    </label>
-                    <label class="filter-option">
-                      <input type="radio" name="contentSort" value="alphabetical" [(ngModel)]="filters.content.sortBy" (change)="applyFilters('content')">
-                      <span class="checkmark"></span>
-                      A-Z Alphabetical
-                    </label>
-                    <label class="filter-option">
-                      <input type="radio" name="contentSort" value="reverse-alphabetical" [(ngModel)]="filters.content.sortBy" (change)="applyFilters('content')">
-                      <span class="checkmark"></span>
-                      Z-A Reverse
-                    </label>
-                  </div>
-                </div>
-                <div class="filter-section">
-                  <h4><i class="fas fa-tags"></i> Categories</h4>
-                  <div class="filter-options">
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.content.categories['editing']" (change)="applyFilters('content')">
-                      <span class="checkmark"></span>
-                      Text & Editing
-                    </label>
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.content.categories['media']" (change)="applyFilters('content')">
-                      <span class="checkmark"></span>
-                      Media & Assets
-                    </label>
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.content.categories['management']" (change)="applyFilters('content')">
-                      <span class="checkmark"></span>
-                      Content Management
-                    </label>
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.content.categories['analytics']" (change)="applyFilters('content')">
-                      <span class="checkmark"></span>
-                      Analytics & Tracking
-                    </label>
-                  </div>
-                </div>
-                <div class="filter-actions">
-                  <button class="clear-filters-btn" (click)="clearFilters('content')">
-                    <i class="fas fa-undo"></i>
-                    Clear All
-                  </button>
-                </div>
-              </div>
+            <div class="filter-group">
+              <label class="filter-option">
+                <input type="radio" name="sort" value="default" [(ngModel)]="filterSettings.sortBy" (change)="applyFilters()">
+                <span class="radio-mark"></span>
+                <span class="option-text">Default Order</span>
+              </label>
+              <label class="filter-option">
+                <input type="radio" name="sort" value="alphabetical-asc" [(ngModel)]="filterSettings.sortBy" (change)="applyFilters()">
+                <span class="radio-mark"></span>
+                <span class="option-text">A-Z Ascending</span>
+              </label>
+              <label class="filter-option">
+                <input type="radio" name="sort" value="alphabetical-desc" [(ngModel)]="filterSettings.sortBy" (change)="applyFilters()">
+                <span class="radio-mark"></span>
+                <span class="option-text">Z-A Descending</span>
+              </label>
             </div>
           </div>
-
-          <div class="accordion-container">
-            @for (item of filteredContentItems; track $index) {
-              <div class="accordion-item">
-                <div class="accordion-header" (click)="toggleAccordion('content', $index)">
-                  <div class="accordion-title">
-                    <div class="title-icon">
-                      <i class="fas fa-{{ getContentIcon($index) }}"></i>
-                    </div>
-                    <span>{{ item.title }}</span>
-                  </div>
-                  <i class="fas accordion-chevron" [class.fa-chevron-down]="!item.expanded" [class.fa-chevron-up]="item.expanded"></i>
-                </div>
-                <div class="accordion-content" [class.expanded]="item.expanded">
-                  <div class="accordion-body">
-                    <p>{{ item.content }}</p>
-                    <div class="accordion-actions">
-                      <button class="action-btn primary">Configure</button>
-                      <button class="action-btn secondary">Learn More</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            }
+          <div class="filter-actions">
+            <button class="action-btn secondary" (click)="clearAllFilters()">
+              <i class="fas fa-undo"></i>
+              Reset Filters
+            </button>
+            <button class="action-btn primary" (click)="applyFilters(); showFilterDropdown = false">
+              <i class="fas fa-check"></i>
+              Apply
+            </button>
           </div>
         </div>
       }
 
-      <!-- Design Tab -->
-      @if (activeTab() === 'design') {
-        <div class="tab-content">
-          <div class="search-filter-section">
-            <div class="search-bar">
-              <input 
-                type="text" 
-                placeholder="Search design options..."
-                [(ngModel)]="designSearchTerm"
-                (input)="filterAccordions('design')">
-              <i class="fas fa-search"></i>
-            </div>
-            <div class="filter-dropdown-wrapper">
-              <button class="filter-btn" (click)="toggleFilterDropdown('design')">
-                <i class="fas fa-filter"></i>
-                <span>Filter</span>
-                <i class="fas fa-chevron-down dropdown-arrow" [class.rotated]="filterDropdowns.design"></i>
-              </button>
-              <div class="filter-dropdown" [class.active]="filterDropdowns.design">
-                <div class="filter-section">
-                  <h4><i class="fas fa-sort-alpha-down"></i> Sort By</h4>
-                  <div class="filter-options">
-                    <label class="filter-option">
-                      <input type="radio" name="designSort" value="default" [(ngModel)]="filters.design.sortBy" (change)="applyFilters('design')">
-                      <span class="checkmark"></span>
-                      Default Order
-                    </label>
-                    <label class="filter-option">
-                      <input type="radio" name="designSort" value="alphabetical" [(ngModel)]="filters.design.sortBy" (change)="applyFilters('design')">
-                      <span class="checkmark"></span>
-                      A-Z Alphabetical
-                    </label>
-                    <label class="filter-option">
-                      <input type="radio" name="designSort" value="reverse-alphabetical" [(ngModel)]="filters.design.sortBy" (change)="applyFilters('design')">
-                      <span class="checkmark"></span>
-                      Z-A Reverse
-                    </label>
-                  </div>
-                </div>
-                <div class="filter-section">
-                  <h4><i class="fas fa-palette"></i> Design Types</h4>
-                  <div class="filter-options">
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.design.categories['layout']" (change)="applyFilters('design')">
-                      <span class="checkmark"></span>
-                      Layout & Structure
-                    </label>
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.design.categories['visual']" (change)="applyFilters('design')">
-                      <span class="checkmark"></span>
-                      Visual Effects
-                    </label>
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.design.categories['typography']" (change)="applyFilters('design')">
-                      <span class="checkmark"></span>
-                      Typography & Text
-                    </label>
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.design.categories['colors']" (change)="applyFilters('design')">
-                      <span class="checkmark"></span>
-                      Colors & Themes
-                    </label>
-                  </div>
-                </div>
-                <div class="filter-actions">
-                  <button class="clear-filters-btn" (click)="clearFilters('design')">
-                    <i class="fas fa-undo"></i>
-                    Clear All
-                  </button>
-                </div>
+      <!-- Accordion Container -->
+      <div class="accordion-container">
+        <!-- Content Tab -->
+        @if (activeTab() === 'content') {
+          @for (item of getFilteredItems(currentContentItems); track item.id) {
+            <div class="accordion-item" [class.expanded]="item.expanded" (click)="toggleAccordion('content', item.id)">
+              <div class="accordion-header">
+                <span class="item-title">{{ item.title }}</span>
+                <i class="fas chevron-icon" [class.fa-chevron-down]="!item.expanded" [class.fa-chevron-up]="item.expanded"></i>
               </div>
+              @if (item.expanded) {
+                <div class="accordion-content">
+                  <p class="item-description">{{ item.description }}</p>
+                </div>
+              }
             </div>
-          </div>
+          }
+        }
 
-          <div class="accordion-container">
-            @for (item of filteredDesignItems; track $index) {
-              <div class="accordion-item">
-                <div class="accordion-header" (click)="toggleAccordion('design', $index)">
-                  <div class="accordion-title">
-                    <div class="title-icon">
-                      <i class="fas fa-{{ getDesignIcon($index) }}"></i>
-                    </div>
-                    <span>{{ item.title }}</span>
-                  </div>
-                  <i class="fas accordion-chevron" [class.fa-chevron-down]="!item.expanded" [class.fa-chevron-up]="item.expanded"></i>
-                </div>
-                <div class="accordion-content" [class.expanded]="item.expanded">
-                  <div class="accordion-body">
-                    <p>{{ item.content }}</p>
-                    <div class="accordion-actions">
-                      <button class="action-btn primary">Customize</button>
-                      <button class="action-btn secondary">Preview</button>
-                    </div>
-                  </div>
-                </div>
+        <!-- Design Tab -->
+        @if (activeTab() === 'design') {
+          @for (item of getFilteredItems(currentDesignItems); track item.id) {
+            <div class="accordion-item" [class.expanded]="item.expanded" (click)="toggleAccordion('design', item.id)">
+              <div class="accordion-header">
+                <span class="item-title">{{ item.title }}</span>
+                <i class="fas chevron-icon" [class.fa-chevron-down]="!item.expanded" [class.fa-chevron-up]="item.expanded"></i>
               </div>
-            }
-          </div>
-        </div>
-      }
-
-      <!-- Advanced Tab -->
-      @if (activeTab() === 'advanced') {
-        <div class="tab-content">
-          <div class="search-filter-section">
-            <div class="search-bar">
-              <input 
-                type="text" 
-                placeholder="Search advanced options..."
-                [(ngModel)]="advancedSearchTerm"
-                (input)="filterAccordions('advanced')">
-              <i class="fas fa-search"></i>
+              @if (item.expanded) {
+                <div class="accordion-content">
+                  @if (item.title === 'Transform') {
+                    <div class="transform-section">
+                      <h4>Transform</h4>
+                      <div class="transform-controls">
+                        <button class="transform-btn" [class.active]="selectedTransform === 'move'" (click)="selectTransform('move')">
+                          <i class="fas fa-arrows-alt"></i>
+                        </button>
+                        <button class="transform-btn" [class.active]="selectedTransform === 'scale'" (click)="selectTransform('scale')">
+                          <i class="fas fa-expand-arrows-alt"></i>
+                        </button>
+                        <button class="transform-btn" [class.active]="selectedTransform === 'rotate'" (click)="selectTransform('rotate')">
+                          <i class="fas fa-redo"></i>
+                        </button>
+                        <button class="transform-btn" [class.active]="selectedTransform === 'skew'" (click)="selectTransform('skew')">
+                          <i class="fas fa-italic"></i>
+                        </button>
+                        <button class="transform-btn" [class.active]="selectedTransform === 'expand'" (click)="selectTransform('expand')">
+                          <i class="fas fa-expand"></i>
+                        </button>
+                      </div>
+                      
+                      <div class="transform-workspace">
+                        <div class="position-grid">
+                          @for (dot of gridDots; track $index) {
+                            <button class="grid-dot" 
+                                   [class.active]="dot.active" 
+                                   (click)="selectGridDot($index)">
+                            </button>
+                          }
+                          <div class="position-label">{{ gridPosition }}</div>
+                        </div>
+                        
+                        <div class="transform-slider">
+                          <div class="slider-container">
+                            <div class="slider-track" (click)="moveSlider($event)">
+                              <div class="slider-handle" [style.top.%]="sliderPosition"></div>
+                            </div>
+                          </div>
+                          <div class="slider-value">{{ verticalPosition }}</div>
+                        </div>
+                      </div>
+                    </div>
+                  } @else {
+                    <p class="item-description">{{ item.description }}</p>
+                  }
+                </div>
+              }
             </div>
-            <div class="filter-dropdown-wrapper">
-              <button class="filter-btn" (click)="toggleFilterDropdown('advanced')">
-                <i class="fas fa-filter"></i>
-                <span>Filter</span>
-                <i class="fas fa-chevron-down dropdown-arrow" [class.rotated]="filterDropdowns.advanced"></i>
-              </button>
-              <div class="filter-dropdown" [class.active]="filterDropdowns.advanced">
-                <div class="filter-section">
-                  <h4><i class="fas fa-sort-alpha-down"></i> Sort By</h4>
-                  <div class="filter-options">
-                    <label class="filter-option">
-                      <input type="radio" name="advancedSort" value="default" [(ngModel)]="filters.advanced.sortBy" (change)="applyFilters('advanced')">
-                      <span class="checkmark"></span>
-                      Default Order
-                    </label>
-                    <label class="filter-option">
-                      <input type="radio" name="advancedSort" value="alphabetical" [(ngModel)]="filters.advanced.sortBy" (change)="applyFilters('advanced')">
-                      <span class="checkmark"></span>
-                      A-Z Alphabetical
-                    </label>
-                    <label class="filter-option">
-                      <input type="radio" name="advancedSort" value="reverse-alphabetical" [(ngModel)]="filters.advanced.sortBy" (change)="applyFilters('advanced')">
-                      <span class="checkmark"></span>
-                      Z-A Reverse
-                    </label>
-                  </div>
-                </div>
-                <div class="filter-section">
-                  <h4><i class="fas fa-layer-group"></i> Complexity Level</h4>
-                  <div class="filter-options">
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.advanced.categories['basic']" (change)="applyFilters('advanced')">
-                      <span class="checkmark"></span>
-                      Basic Configuration
-                    </label>
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.advanced.categories['intermediate']" (change)="applyFilters('advanced')">
-                      <span class="checkmark"></span>
-                      Intermediate Setup
-                    </label>
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.advanced.categories['expert']" (change)="applyFilters('advanced')">
-                      <span class="checkmark"></span>
-                      Expert Level
-                    </label>
-                    <label class="filter-option">
-                      <input type="checkbox" [(ngModel)]="filters.advanced.categories['developer']" (change)="applyFilters('advanced')">
-                      <span class="checkmark"></span>
-                      Developer Tools
-                    </label>
-                  </div>
-                </div>
-                <div class="filter-actions">
-                  <button class="clear-filters-btn" (click)="clearFilters('advanced')">
-                    <i class="fas fa-undo"></i>
-                    Clear All
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          }
+        }
 
-          <div class="accordion-container">
-            @for (item of filteredAdvancedItems; track $index) {
-              <div class="accordion-item">
-                <div class="accordion-header" (click)="toggleAccordion('advanced', $index)">
-                  <div class="accordion-title">
-                    <div class="title-icon">
-                      <i class="fas fa-{{ getAdvancedIcon($index) }}"></i>
-                    </div>
-                    <span>{{ item.title }}</span>
-                  </div>
-                  <i class="fas accordion-chevron" [class.fa-chevron-down]="!item.expanded" [class.fa-chevron-up]="item.expanded"></i>
-                </div>
-                <div class="accordion-content" [class.expanded]="item.expanded">
-                  <div class="accordion-body">
-                    <p>{{ item.content }}</p>
-                    <div class="accordion-actions">
-                      <button class="action-btn primary">Configure</button>
-                      <button class="action-btn secondary">Documentation</button>
-                    </div>
-                  </div>
-                </div>
+        <!-- Advanced Tab -->
+        @if (activeTab() === 'advanced') {
+          @for (item of getFilteredItems(currentAdvancedItems); track item.id) {
+            <div class="accordion-item" [class.expanded]="item.expanded" (click)="toggleAccordion('advanced', item.id)">
+              <div class="accordion-header">
+                <span class="item-title">{{ item.title }}</span>
+                <i class="fas chevron-icon" [class.fa-chevron-down]="!item.expanded" [class.fa-chevron-up]="item.expanded"></i>
               </div>
-            }
+              @if (item.expanded) {
+                <div class="accordion-content">
+                  <p class="item-description">{{ item.description }}</p>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+
+      <!-- Empty State -->
+      @if (getFilteredItemsCount() === 0) {
+        <div class="empty-state">
+          <div class="empty-icon">
+            <i class="fas fa-search"></i>
           </div>
+          <h3>No items found</h3>
+          <p>Try adjusting your search terms</p>
+          <button class="clear-filters-btn" (click)="clearAllFilters()">
+            <i class="fas fa-undo"></i>
+            Clear filters
+          </button>
         </div>
       }
     </div>

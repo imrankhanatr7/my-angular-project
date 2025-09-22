@@ -3,30 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 interface AccordionItem {
+  id: number;
   title: string;
-  content: string;
+  description: string;
   expanded: boolean;
-  category: string;
-  originalIndex: number;
-}
-
-interface FilterConfig {
-  sortBy: string;
-  categories: {
-    editing?: boolean;
-    media?: boolean;
-    management?: boolean;
-    analytics?: boolean;
-    layout?: boolean;
-    visual?: boolean;
-    typography?: boolean;
-    colors?: boolean;
-    basic?: boolean;
-    intermediate?: boolean;
-    expert?: boolean;
-    developer?: boolean;
-    [key: string]: boolean | undefined;
-  };
 }
 
 @Component({
@@ -37,511 +17,259 @@ interface FilterConfig {
   styleUrl: './app.css'
 })
 export class AppComponent implements OnInit {
-  // Using signals for better performance in Angular 20
   isDrawerOpen = signal(false);
-  activeTab = signal('content');
-  isDarkMode = signal(true); // Default to dark mode
-  
-  // Search terms
-  contentSearchTerm = '';
-  designSearchTerm = '';
-  advancedSearchTerm = '';
-  
-  // Filter dropdown states
-  filterDropdowns = {
-    content: false,
-    design: false,
-    advanced: false
-  };
-  
-  // Filter configurations
-  filters = {
-    content: {
-      sortBy: 'default',
-      categories: {
-        editing: false,
-        media: false,
-        management: false,
-        analytics: false
-      }
-    } as FilterConfig,
-    design: {
-      sortBy: 'default',
-      categories: {
-        layout: false,
-        visual: false,
-        typography: false,
-        colors: false
-      }
-    } as FilterConfig,
-    advanced: {
-      sortBy: 'default',
-      categories: {
-        basic: false,
-        intermediate: false,
-        expert: false,
-        developer: false
-      }
-    } as FilterConfig
-  };
-  
-  // Original items
-  contentItems: AccordionItem[] = [];
-  designItems: AccordionItem[] = [];
-  advancedItems: AccordionItem[] = [];
-  
-  // Filtered items
-  filteredContentItems: AccordionItem[] = [];
-  filteredDesignItems: AccordionItem[] = [];
-  filteredAdvancedItems: AccordionItem[] = [];
+  activeTab = signal('design');
+  searchTerm = '';
+  showFilterDropdown = false;
+  showPresetDropdown = false;
+  showMoreMenu = false;
 
-  // Icon arrays for different sections
-  contentIcons = ['edit', 'image', 'layer-group', 'cubes', 'link', 'tags', 'calendar', 'check-circle', 'globe', 'chart-bar'];
-  designIcons = ['expand-arrows-alt', 'arrows-alt', 'border-style', 'shadow', 'palette', 'font', 'th', 'play', 'fill', 'magic'];
-  advancedIcons = ['transform', 'code', 'plug', 'server', 'tachometer-alt', 'shield-alt', 'database', 'exclamation-triangle', 'tools', 'cog'];
+  // Filter settings
+  filterSettings = {
+    sortBy: 'default'
+  };
+
+  // Transform functionality
+  selectedTransform = 'expand';
+  gridPosition = 'center';
+  verticalPosition = 'center';
+  sliderPosition = 50;
+
+  gridDots = [
+    { active: false }, { active: false }, { active: false },
+    { active: false }, { active: true },  { active: false },
+    { active: false }, { active: false }, { active: false }
+  ];
+
+  // Simple items without extra metadata
+  contentItems: AccordionItem[] = [
+    { id: 1, title: 'Text Content', description: 'Manage all text content including headings, paragraphs, and inline text formatting options.', expanded: false },
+    { id: 2, title: 'Rich Text Editor', description: 'Advanced WYSIWYG editor with formatting tools and collaborative editing features.', expanded: false },
+    { id: 3, title: 'Image Management', description: 'Upload, resize, crop, and optimize images with automatic compression.', expanded: false },
+    { id: 4, title: 'Video Integration', description: 'Embed videos from YouTube, Vimeo, or upload custom videos with playback controls.', expanded: false },
+    { id: 5, title: 'Interactive Buttons', description: 'Create custom buttons with hover effects, animations, and click actions.', expanded: false },
+    { id: 6, title: 'Form Builder', description: 'Build complex forms with validation rules and submission handling.', expanded: false },
+    { id: 7, title: 'Data Tables', description: 'Create organized data tables with sorting and pagination features.', expanded: false },
+    { id: 8, title: 'Icon Library', description: 'Access thousands of icons with customizable sizes and colors.', expanded: false },
+    { id: 9, title: 'Media Gallery', description: 'Create stunning galleries with lightbox effects and navigation.', expanded: false },
+    { id: 10, title: 'Content Templates', description: 'Design reusable content templates for consistent formatting.', expanded: false }
+  ];
+
+  designItems: AccordionItem[] = [
+    { id: 1, title: 'Sizing', description: 'Control width, height, and responsive sizing with breakpoint-specific values.', expanded: false },
+    { id: 2, title: 'Spacing', description: 'Manage margins, padding, and gaps with consistent spacing scales.', expanded: false },
+    { id: 3, title: 'Border', description: 'Create custom borders with advanced styling and radius controls.', expanded: false },
+    { id: 4, title: 'Box Shadow', description: 'Apply sophisticated shadow effects with multiple layers and presets.', expanded: false },
+    { id: 5, title: 'Filters', description: 'Apply visual filters including blur, brightness, and color adjustments.', expanded: false },
+    { id: 6, title: 'Transform', description: 'Apply 2D and 3D transformations with precise positioning control.', expanded: false },
+    { id: 7, title: 'Background', description: 'Design complex backgrounds with gradients, patterns, and images.', expanded: false },
+    { id: 8, title: 'Typography', description: 'Complete typography control with responsive font scaling.', expanded: false },
+    { id: 9, title: 'Colors', description: 'Advanced color management with themes and accessibility compliance.', expanded: false },
+    { id: 10, title: 'Layout Grid', description: 'Powerful CSS Grid and Flexbox layout tools with visual editor.', expanded: false }
+  ];
+
+  advancedItems: AccordionItem[] = [
+    { id: 1, title: 'Custom CSS', description: 'Write custom CSS with syntax highlighting and real-time preview.', expanded: false },
+    { id: 2, title: 'Animation', description: 'Create complex animations with keyframe editor and timing controls.', expanded: false },
+    { id: 3, title: 'Responsive Design', description: 'Advanced responsive design tools with custom breakpoints.', expanded: false },
+    { id: 4, title: 'JavaScript', description: 'Embed custom JavaScript for interactive behaviors.', expanded: false },
+    { id: 5, title: 'Performance', description: 'Monitor and optimize loading performance with advanced metrics.', expanded: false },
+    { id: 6, title: 'SEO Settings', description: 'Complete SEO setup with meta tags and structured data.', expanded: false },
+    { id: 7, title: 'Accessibility', description: 'Ensure WCAG compliance with accessibility auditing tools.', expanded: false },
+    { id: 8, title: 'API Integration', description: 'Connect to external APIs with authentication and error handling.', expanded: false },
+    { id: 9, title: 'Security', description: 'Configure security headers and data protection measures.', expanded: false },
+    { id: 10, title: 'Analytics', description: 'Integrate analytics tracking with privacy-compliant setup.', expanded: false }
+  ];
+
+  // Current filtered items
+  currentContentItems: AccordionItem[] = [];
+  currentDesignItems: AccordionItem[] = [];
+  currentAdvancedItems: AccordionItem[] = [];
 
   ngOnInit() {
-    this.initializeContentItems();
-    this.initializeDesignItems();
-    this.initializeAdvancedItems();
-    
-    // Load theme preference from localStorage
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      this.isDarkMode.set(savedTheme === 'dark');
-    }
-    
-    // Close filter dropdowns when clicking outside
+    this.initializeItems();
+    this.setupEventListeners();
+    setTimeout(() => this.isDrawerOpen.set(true), 500);
+  }
+
+  initializeItems() {
+    this.currentContentItems = [...this.contentItems];
+    this.currentDesignItems = [...this.designItems];
+    this.currentAdvancedItems = [...this.advancedItems];
+  }
+
+  setupEventListeners() {
     document.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('.filter-dropdown-wrapper')) {
-        this.filterDropdowns = {
-          content: false,
-          design: false,
-          advanced: false
-        };
+      if (!target.closest('.filter-dropdown') && !target.closest('.filter-btn')) {
+        this.showFilterDropdown = false;
+      }
+      if (!target.closest('.more-menu') && !target.closest('.more-btn')) {
+        this.showMoreMenu = false;
       }
     });
-  }
-
-  initializeContentItems() {
-    this.contentItems = [
-      {
-        title: 'Text Editor',
-        content: 'Advanced text editing capabilities with rich formatting options, spell check, and collaborative editing features for professional content creation.',
-        expanded: false,
-        category: 'editing',
-        originalIndex: 0
-      },
-      {
-        title: 'Media Gallery',
-        content: 'Comprehensive media management system with image optimization, video streaming, and gallery organization tools for multimedia content.',
-        expanded: false,
-        category: 'media',
-        originalIndex: 1
-      },
-      {
-        title: 'Layout Builder',
-        content: 'Drag-and-drop layout constructor with responsive grid system and component-based architecture for flexible page designs.',
-        expanded: false,
-        category: 'management',
-        originalIndex: 2
-      },
-      {
-        title: 'Content Blocks',
-        content: 'Modular content system with reusable blocks, custom templates, and dynamic content rendering for efficient content management.',
-        expanded: false,
-        category: 'management',
-        originalIndex: 3
-      },
-      {
-        title: 'Data Integration',
-        content: 'Real-time data synchronization with external APIs, webhooks, and automated content updates for seamless workflow integration.',
-        expanded: false,
-        category: 'management',
-        originalIndex: 4
-      },
-      {
-        title: 'Tag Manager',
-        content: 'Smart tagging system with auto-suggestions, hierarchical categories, and advanced filtering for better content organization.',
-        expanded: false,
-        category: 'management',
-        originalIndex: 5
-      },
-      {
-        title: 'Scheduler',
-        content: 'Content scheduling with timezone support, recurring publications, and automated workflows for timely content delivery.',
-        expanded: false,
-        category: 'management',
-        originalIndex: 6
-      },
-      {
-        title: 'Quality Control',
-        content: 'Automated content validation, approval workflows, and compliance checking systems for maintaining content standards.',
-        expanded: false,
-        category: 'management',
-        originalIndex: 7
-      },
-      {
-        title: 'Localization Hub',
-        content: 'Multi-language support with translation management, regional customization, and RTL layouts for global content distribution.',
-        expanded: false,
-        category: 'editing',
-        originalIndex: 8
-      },
-      {
-        title: 'Analytics Dashboard',
-        content: 'Comprehensive analytics with user engagement tracking, performance metrics, and custom reports for data-driven decisions.',
-        expanded: false,
-        category: 'analytics',
-        originalIndex: 9
-      }
-    ];
-    this.filteredContentItems = [...this.contentItems];
-  }
-
-  initializeDesignItems() {
-    this.designItems = [
-      {
-        title: 'Responsive Sizing',
-        content: 'Fluid sizing system with breakpoint controls, aspect ratio management, and viewport optimization for perfect responsive design.',
-        expanded: false,
-        category: 'layout',
-        originalIndex: 0
-      },
-      {
-        title: 'Smart Spacing',
-        content: 'Intelligent spacing system with consistent margins, padding scales, and rhythm-based typography for harmonious layouts.',
-        expanded: false,
-        category: 'layout',
-        originalIndex: 1
-      },
-      {
-        title: 'Border Studio',
-        content: 'Advanced border customization with gradient borders, animated outlines, and custom shapes for unique visual elements.',
-        expanded: false,
-        category: 'visual',
-        originalIndex: 2
-      },
-      {
-        title: 'Shadow Effects',
-        content: 'Professional shadow system with multiple layers, color customization, and lighting effects for depth and dimension.',
-        expanded: false,
-        category: 'visual',
-        originalIndex: 3
-      },
-      {
-        title: 'Color Harmonies',
-        content: 'Intelligent color palette generator with accessibility compliance and brand consistency tools for perfect color schemes.',
-        expanded: false,
-        category: 'colors',
-        originalIndex: 4
-      },
-      {
-        title: 'Typography Scale',
-        content: 'Modular typography system with web font loading, variable fonts, and reading optimization for excellent readability.',
-        expanded: false,
-        category: 'typography',
-        originalIndex: 5
-      },
-      {
-        title: 'Grid Systems',
-        content: 'Advanced CSS Grid and Flexbox layouts with visual grid editor and responsive templates for complex layouts.',
-        expanded: false,
-        category: 'layout',
-        originalIndex: 6
-      },
-      {
-        title: 'Motion Design',
-        content: 'Sophisticated animation system with easing functions, timeline control, and performance optimization for smooth interactions.',
-        expanded: false,
-        category: 'visual',
-        originalIndex: 7
-      },
-      {
-        title: 'Background Art',
-        content: 'Creative background system with gradients, patterns, textures, and interactive elements for stunning visual appeal.',
-        expanded: false,
-        category: 'colors',
-        originalIndex: 8
-      },
-      {
-        title: 'Visual Filters',
-        content: 'Professional filter effects with blur, contrast, saturation controls, and Instagram-style presets for image enhancement.',
-        expanded: false,
-        category: 'visual',
-        originalIndex: 9
-      }
-    ];
-    this.filteredDesignItems = [...this.designItems];
-  }
-
-  initializeAdvancedItems() {
-    this.advancedItems = [
-      {
-        title: 'Transform Engine',
-        content: '3D transforms with matrix operations, perspective controls, and hardware acceleration optimization for advanced visual effects.',
-        expanded: false,
-        category: 'expert',
-        originalIndex: 0
-      },
-      {
-        title: 'CSS Processor',
-        content: 'Advanced CSS preprocessing with SASS/LESS support, autoprefixer, and minification tools for optimized stylesheets.',
-        expanded: false,
-        category: 'intermediate',
-        originalIndex: 1
-      },
-      {
-        title: 'Plugin Architecture',
-        content: 'Extensible plugin system with custom hooks, event handlers, and third-party integrations for unlimited functionality.',
-        expanded: false,
-        category: 'developer',
-        originalIndex: 2
-      },
-      {
-        title: 'API Gateway',
-        content: 'Centralized API management with rate limiting, authentication, caching, and monitoring for robust backend integration.',
-        expanded: false,
-        category: 'expert',
-        originalIndex: 3
-      },
-      {
-        title: 'Performance Suite',
-        content: 'Complete performance optimization with lazy loading, code splitting, and resource prefetching for lightning-fast loading.',
-        expanded: false,
-        category: 'intermediate',
-        originalIndex: 4
-      },
-      {
-        title: 'Security Center',
-        content: 'Enterprise-grade security with encryption, access controls, audit logs, and compliance tools for maximum protection.',
-        expanded: false,
-        category: 'expert',
-        originalIndex: 5
-      },
-      {
-        title: 'Database Hub',
-        content: 'Multi-database support with connection pooling, query optimization, and data migration tools for scalable data management.',
-        expanded: false,
-        category: 'expert',
-        originalIndex: 6
-      },
-      {
-        title: 'Error Tracking',
-        content: 'Real-time error monitoring with stack trace analysis, user context, and automated notifications for quick issue resolution.',
-        expanded: false,
-        category: 'basic',
-        originalIndex: 7
-      },
-      {
-        title: 'Developer Tools',
-        content: 'Comprehensive development suite with debugging, profiling, testing, and deployment utilities for efficient development.',
-        expanded: false,
-        category: 'developer',
-        originalIndex: 8
-      },
-      {
-        title: 'Cloud Config',
-        content: 'Cloud infrastructure management with auto-scaling, load balancing, and environment provisioning for enterprise deployment.',
-        expanded: false,
-        category: 'expert',
-        originalIndex: 9
-      }
-    ];
-    this.filteredAdvancedItems = [...this.advancedItems];
   }
 
   toggleDrawer() {
     this.isDrawerOpen.set(!this.isDrawerOpen());
-    // Close all filter dropdowns when drawer opens/closes
-    this.filterDropdowns = {
-      content: false,
-      design: false,
-      advanced: false
-    };
   }
 
   closeDrawer() {
     this.isDrawerOpen.set(false);
-    // Close all filter dropdowns when drawer closes
-    this.filterDropdowns = {
-      content: false,
-      design: false,
-      advanced: false
-    };
+    this.showFilterDropdown = false;
+    this.showMoreMenu = false;
   }
 
   setActiveTab(tab: string) {
     this.activeTab.set(tab);
-    // Close all filter dropdowns when switching tabs
-    this.filterDropdowns = {
-      content: false,
-      design: false,
-      advanced: false
-    };
+    this.showFilterDropdown = false;
   }
 
-  toggleTheme() {
-    this.isDarkMode.set(!this.isDarkMode());
-    localStorage.setItem('theme', this.isDarkMode() ? 'dark' : 'light');
+  onSearch() {
+    this.applyFilters();
   }
 
-  toggleFilterDropdown(section: string) {
-    this.filterDropdowns = {
-      content: false,
-      design: false,
-      advanced: false,
-      [section]: !this.filterDropdowns[section as keyof typeof this.filterDropdowns]
-    };
+  toggleFilterDropdown(event: Event) {
+    event.stopPropagation();
+    this.showFilterDropdown = !this.showFilterDropdown;
   }
 
-  clearFilters(section: string) {
-    const sectionKey = section as keyof typeof this.filters;
-    this.filters[sectionKey].sortBy = 'default';
-    
-    // Clear all category filters
-    Object.keys(this.filters[sectionKey].categories).forEach(key => {
-      if (this.filters[sectionKey].categories[key] !== undefined) {
-        this.filters[sectionKey].categories[key] = false;
-      }
-    });
-    
-    this.applyFilters(section);
+  applyFilters() {
+    this.currentContentItems = this.filterItems(this.contentItems);
+    this.currentDesignItems = this.filterItems(this.designItems);
+    this.currentAdvancedItems = this.filterItems(this.advancedItems);
   }
 
-  applyFilters(section: string) {
-    switch(section) {
-      case 'content':
-        this.applyContentFilters();
-        break;
-      case 'design':
-        this.applyDesignFilters();
-        break;
-      case 'advanced':
-        this.applyAdvancedFilters();
-        break;
-    }
-  }
+  filterItems(items: AccordionItem[]): AccordionItem[] {
+    let filtered = [...items];
 
-  applyContentFilters() {
-    let items = [...this.contentItems];
-    
-    // Apply category filters
-    const selectedCategories = Object.keys(this.filters.content.categories)
-      .filter(key => this.filters.content.categories[key] === true);
-    
-    if (selectedCategories.length > 0) {
-      items = items.filter(item => selectedCategories.includes(item.category));
-    }
-    
     // Apply search filter
-    if (this.contentSearchTerm.trim() !== '') {
-      items = items.filter(item =>
-        item.title.toLowerCase().includes(this.contentSearchTerm.toLowerCase()) ||
-        item.content.toLowerCase().includes(this.contentSearchTerm.toLowerCase())
+    if (this.searchTerm.trim()) {
+      const searchLower = this.searchTerm.toLowerCase();
+      filtered = filtered.filter(item => 
+        item.title.toLowerCase().includes(searchLower) ||
+        item.description.toLowerCase().includes(searchLower)
       );
     }
-    
-    // Apply sorting
-    items = this.applySorting(items, this.filters.content.sortBy);
-    
-    this.filteredContentItems = items;
-  }
 
-  applyDesignFilters() {
-    let items = [...this.designItems];
-    
-    // Apply category filters
-    const selectedCategories = Object.keys(this.filters.design.categories)
-      .filter(key => this.filters.design.categories[key] === true);
-    
-    if (selectedCategories.length > 0) {
-      items = items.filter(item => selectedCategories.includes(item.category));
-    }
-    
-    // Apply search filter
-    if (this.designSearchTerm.trim() !== '') {
-      items = items.filter(item =>
-        item.title.toLowerCase().includes(this.designSearchTerm.toLowerCase()) ||
-        item.content.toLowerCase().includes(this.designSearchTerm.toLowerCase())
-      );
-    }
-    
     // Apply sorting
-    items = this.applySorting(items, this.filters.design.sortBy);
-    
-    this.filteredDesignItems = items;
-  }
-
-  applyAdvancedFilters() {
-    let items = [...this.advancedItems];
-    
-    // Apply category filters
-    const selectedCategories = Object.keys(this.filters.advanced.categories)
-      .filter(key => this.filters.advanced.categories[key] === true);
-    
-    if (selectedCategories.length > 0) {
-      items = items.filter(item => selectedCategories.includes(item.category));
-    }
-    
-    // Apply search filter
-    if (this.advancedSearchTerm.trim() !== '') {
-      items = items.filter(item =>
-        item.title.toLowerCase().includes(this.advancedSearchTerm.toLowerCase()) ||
-        item.content.toLowerCase().includes(this.advancedSearchTerm.toLowerCase())
-      );
-    }
-    
-    // Apply sorting
-    items = this.applySorting(items, this.filters.advanced.sortBy);
-    
-    this.filteredAdvancedItems = items;
-  }
-
-  applySorting(items: AccordionItem[], sortBy: string): AccordionItem[] {
-    switch(sortBy) {
-      case 'alphabetical':
-        return items.sort((a, b) => a.title.localeCompare(b.title));
-      case 'reverse-alphabetical':
-        return items.sort((a, b) => b.title.localeCompare(a.title));
+    switch (this.filterSettings.sortBy) {
+      case 'alphabetical-asc':
+        filtered.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'alphabetical-desc':
+        filtered.sort((a, b) => b.title.localeCompare(a.title));
+        break;
       case 'default':
       default:
-        return items.sort((a, b) => a.originalIndex - b.originalIndex);
+        filtered.sort((a, b) => a.id - b.id);
+        break;
+    }
+
+    return filtered;
+  }
+
+  clearAllFilters() {
+    this.filterSettings.sortBy = 'default';
+    this.searchTerm = '';
+    this.applyFilters();
+  }
+
+  getFilteredItemsCount(): number {
+    return this.getFilteredItems(this.getCurrentItems()).length;
+  }
+
+  getCurrentItems(): AccordionItem[] {
+    switch(this.activeTab()) {
+      case 'content': return this.currentContentItems;
+      case 'design': return this.currentDesignItems;
+      case 'advanced': return this.currentAdvancedItems;
+      default: return [];
     }
   }
 
-  filterAccordions(section: string) {
-    this.applyFilters(section);
+  getFilteredItems(items: AccordionItem[]): AccordionItem[] {
+    return items;
   }
 
-  toggleAccordion(section: string, index: number) {
+  toggleAccordion(section: string, id: number) {
+    let items: AccordionItem[] = [];
+    
     switch(section) {
-      case 'content':
-        this.filteredContentItems[index].expanded = !this.filteredContentItems[index].expanded;
-        break;
-      case 'design':
-        this.filteredDesignItems[index].expanded = !this.filteredDesignItems[index].expanded;
-        break;
-      case 'advanced':
-        this.filteredAdvancedItems[index].expanded = !this.filteredAdvancedItems[index].expanded;
-        break;
+      case 'content': items = this.currentContentItems; break;
+      case 'design': items = this.currentDesignItems; break;
+      case 'advanced': items = this.currentAdvancedItems; break;
+    }
+    
+    const item = items.find(item => item.id === id);
+    if (item) {
+      item.expanded = !item.expanded;
     }
   }
 
-  // Icon getter methods
-  getContentIcon(index: number): string {
-    const item = this.filteredContentItems[index];
-    return item ? this.contentIcons[item.originalIndex] || 'circle' : 'circle';
+  // Header actions
+  togglePresetDropdown() {
+    this.showPresetDropdown = !this.showPresetDropdown;
   }
 
-  getDesignIcon(index: number): string {
-    const item = this.filteredDesignItems[index];
-    return item ? this.designIcons[item.originalIndex] || 'circle' : 'circle';
+  toggleMoreMenu() {
+    this.showMoreMenu = !this.showMoreMenu;
   }
 
-  getAdvancedIcon(index: number): string {
-    const item = this.filteredAdvancedItems[index];
-    return item ? this.advancedIcons[item.originalIndex] || 'circle' : 'circle';
+  openSettings() {
+    console.log('Settings opened');
+  }
+
+  toggleView() {
+    console.log('View toggled');
+  }
+
+  exportSettings() {
+    console.log('Settings exported');
+    this.showMoreMenu = false;
+  }
+
+  importSettings() {
+    console.log('Settings imported');
+    this.showMoreMenu = false;
+  }
+
+  resetSettings() {
+    this.clearAllFilters();
+    this.showMoreMenu = false;
+  }
+
+  // Transform functionality
+  selectTransform(type: string) {
+    this.selectedTransform = type;
+  }
+
+  selectGridDot(index: number) {
+    this.gridDots.forEach(dot => dot.active = false);
+    this.gridDots[index].active = true;
+    
+    const positions = [
+      'top-left', 'top-center', 'top-right',
+      'center-left', 'center', 'center-right',
+      'bottom-left', 'bottom-center', 'bottom-right'
+    ];
+    this.gridPosition = positions[index];
+  }
+
+  moveSlider(event: MouseEvent) {
+    const slider = event.currentTarget as HTMLElement;
+    const rect = slider.getBoundingClientRect();
+    const y = event.clientY - rect.top;
+    const percentage = Math.max(0, Math.min(100, (y / rect.height) * 100));
+    
+    this.sliderPosition = percentage;
+    
+    if (percentage < 33) {
+      this.verticalPosition = 'top';
+    } else if (percentage > 66) {
+      this.verticalPosition = 'bottom';
+    } else {
+      this.verticalPosition = 'center';
+    }
   }
 }
